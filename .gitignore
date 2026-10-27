@@ -1,0 +1,16 @@
+# runtime files
+run/
+*.log
+
+# offline installer archives / model weights — too large for git
+offline/*
+!offline/README.md
+*.gguf
+
+# local customizations
+Modelfile
+.env
+
+__pycache__/
+.venv/
+.DS_Store

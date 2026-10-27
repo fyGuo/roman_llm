@@ -1,0 +1,25 @@
+# Alternative to the scripts, only if the VM has Docker.
+#   docker compose up -d
+#   docker compose exec ollama ollama pull llama3.1:8b
+# For NVIDIA GPUs, uncomment the `deploy` block (needs nvidia-container-toolkit).
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=30m
+    restart: unless-stopped
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  ollama-data:

@@ -1,0 +1,12 @@
+# Optional: build a customized model with a fixed system prompt and parameters.
+#   cp Modelfile.example Modelfile   # edit it
+#   ollama create my-assistant -f Modelfile
+#   ollama run my-assistant
+FROM llama3.1:8b
+
+PARAMETER temperature 0.2
+PARAMETER num_ctx 8192
+
+SYSTEM """
+You are a careful research assistant. Answer concisely and say when you are unsure.
+"""
