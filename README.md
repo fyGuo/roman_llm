@@ -41,6 +41,7 @@ Stop the server with `bash scripts/stop_server.sh`.
 | `scripts/setup_python.sh` | Install uv (no sudo) and run `uv sync` |
 | `python/ollama_client.py` | Client (`chat`, `generate`), standard library only |
 | `python/batch_example.py` | Apply a prompt to each row of a CSV, resumable |
+| `data/country_descriptions.csv` | Example input for `batch_example.py` (see below) |
 | `Modelfile.example` | Custom model with fixed system prompt / parameters |
 | `docker-compose.yml` | Alternative if the VM has Docker |
 
@@ -72,6 +73,37 @@ git add pyproject.toml uv.lock .python-version && git commit -m "deps" && git pu
 
 On the VM, `git pull && uv sync --locked` reproduces the exact same environment.
 Run code with `uv run <script.py>` (no need to activate `.venv`).
+
+## Example: identify countries from descriptions
+
+`data/country_descriptions.csv` has 100 rows: `id`, `text` (a description that doesn't name the
+country), and `true_country` (the answer, which the model never sees).
+
+Run the model on every row (server must be running and the model pulled):
+
+```bash
+uv run python/batch_example.py data/country_descriptions.csv data/country_predictions.csv \
+  --column text \
+  --instruction "Identify the country described. Answer with the country name only."
+```
+
+The output CSV contains the original columns plus `llm_output`. If the run is interrupted, rerun
+the same command and it continues where it stopped. Add `--model qwen2.5:7b` to try another model
+(use a different output file per model).
+
+Check accuracy (exact match, case-insensitive):
+
+```bash
+uv run python -c "
+import csv
+rows = list(csv.DictReader(open('data/country_predictions.csv')))
+ok = sum(r['llm_output'].strip(' .').lower() == r['true_country'].lower() for r in rows)
+print(f'{ok}/{len(rows)} correct')
+"
+```
+
+Exact match is strict: answers like "USA" or "The Netherlands" count as wrong, so look over the
+mismatches by hand.
 
 ## Offline install
 
